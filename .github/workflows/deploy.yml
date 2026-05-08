@@ -47,7 +47,7 @@ jobs:
             python manage.py collectstatic --noinput --clear
 
             echo "=== 🔄 Gunicorn ni qayta ishga tushirish ==="
-            sudo systemctl restart myproject
+            sudo systemctl restart gunicorn
 
             echo "=== ✅ Deploy muvaffaqiyatli yakunlandi! ==="
 
