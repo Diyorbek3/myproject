@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <title>Mening Blogim</title>
+    <style>
+        body { font-family: Arial, sans-serif; max-width: 800px; margin: 50px auto; padding: 20px; }
+        .post { border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 8px; }
+        h1 { color: #2c3e50; }
+        .badge { background: #27ae60; color: white; padding: 3px 8px; border-radius: 4px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>Postlar <span class="badge">CI/CD ishlayapti ✅</span></h1>
+
+    {% if posts %}
+        {% for post in posts %}
+        <div class="post">
+            <h3>{{ post.title }}</h3>
+            <p>{{ post.content }}</p>
+            <small>{{ post.created_at|date:"d.m.Y H:i" }}</small>
+        </div>
+        {% endfor %}
+    {% else %}
+        <p>Hozircha postlar yo'q. Admin paneliga kiring va qo'shing.</p>
+    {% endif %}
+
+    <hr>
+    <p><a href="/admin/">Admin panel</a> | <a href="/health/">Health check</a></p>
+</body>
+</html>
