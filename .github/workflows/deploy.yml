@@ -1,0 +1,63 @@
+name: 🚀 Deploy to Production
+
+# Qachon ishga tushadi?
+on:
+  push:
+    branches: [ main ]     # faqat main ga push bo'lganda
+
+jobs:
+  deploy:
+    name: Deploy Django App
+    runs-on: ubuntu-latest
+
+    steps:
+
+      # 1. Kodni yuklab olish
+      - name: 📥 Checkout code
+        uses: actions/checkout@v4
+
+      # 2. SSH agentini sozlash
+      - name: 🔑 Setup SSH Agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      # 3. Serverda deploy qilish
+      - name: 🖥️ Deploy to Server
+        run: |
+          ssh -o StrictHostKeyChecking=no \
+              ${{ secrets.SSH_USER }}@${{ secrets.SSH_HOST }} << 'DEPLOY_SCRIPT'
+
+            echo "=== 📂 Loyiha papkasiga o'tish ==="
+            cd ${{ secrets.PROJECT_PATH }}
+
+            echo "=== ⬇️ Oxirgi o'zgarishlarni olish ==="
+            git pull origin main
+
+            echo "=== 🐍 Virtual muhitni aktivlashtirish ==="
+            source venv/bin/activate
+
+            echo "=== 📦 Paketlarni yangilash ==="
+            pip install -r requirements.txt --quiet
+
+            echo "=== 🗄️ Migratsiyalarni ishlatish ==="
+            python manage.py migrate --noinput
+
+            echo "=== 🗂️ Static fayllarni yig'ish ==="
+            python manage.py collectstatic --noinput --clear
+
+            echo "=== 🔄 Gunicorn ni qayta ishga tushirish ==="
+            sudo systemctl restart myproject
+
+            echo "=== ✅ Deploy muvaffaqiyatli yakunlandi! ==="
+
+          DEPLOY_SCRIPT
+
+      # 4. Health check — hamma narsa ishlayaptimi?
+      - name: 🏥 Health Check
+        run: |
+          sleep 5
+          curl --fail --silent \
+               http://${{ secrets.SSH_HOST }}/health/ \
+            && echo "✅ Server sog'lom ishlayapti!" \
+            || (echo "❌ Health check muvaffaqiyatsiz!" && exit 1)
